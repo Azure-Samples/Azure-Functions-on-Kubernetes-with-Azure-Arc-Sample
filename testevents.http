@@ -1,0 +1,43 @@
+### Valid event without banned words
+POST http://localhost:7071/runtime/webhooks/eventgrid?functionName=ReviewsValidator
+Content-Type: application/json
+aeg-event-type: Notification
+
+{
+    "id": "1807",
+    "eventType": "recordInserted",
+    "subject": "reviews",
+    "eventTime": "2017-08-10T21:03:07+00:00",
+    "data": {
+        "review": "This is a review with a goodword",
+        "rating": 5,
+        "userId": "53261fcc-94a8-4bdf-81ee-d09163c4a124",
+        "createdTime": "2020-03-11T21:03:07+00:00",
+        "productId": "53261fcc-94a8-4bdf-81ee-d09163c4a124"
+    },
+    "dataVersion": "1.0",
+    "metadataVersion": "1",
+    "topic": "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.EventGrid/topics/reviews"
+}
+
+### Invalid event with a banned word
+POST http://localhost:7071/runtime/webhooks/eventgrid?functionName=ReviewsValidator
+Content-Type: application/json
+aeg-event-type: Notification
+
+{
+    "id": "1807",
+    "eventType": "recordInserted",
+    "subject": "reviews",
+    "eventTime": "2017-08-10T21:03:07+00:00",
+    "data": {
+        "review": "This is a review with a badword",
+        "rating": 5,
+        "userId": "53261fcc-94a8-4bdf-81ee-d09163c4a124",
+        "createdTime": "2020-03-11T21:03:07+00:00",
+        "productId": "53261fcc-94a8-4bdf-81ee-d09163c4a124"
+    },
+    "dataVersion": "1.0",
+    "metadataVersion": "1",
+    "topic": "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.EventGrid/topics/reviews"
+}

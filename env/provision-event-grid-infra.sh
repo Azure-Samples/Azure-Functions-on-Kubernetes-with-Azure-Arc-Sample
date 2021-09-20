@@ -79,7 +79,7 @@ CUSTOM_LOCATION_ID_EVENTGRID=$(az customlocation show -g $RESOURCE_GROUP -n $CUS
 az eventgrid topic create -g $RESOURCE_GROUP -n $EVENT_GRID_TOPIC_NAME --kind azurearc -l $LOCATION  --extended-location-name $CUSTOM_LOCATION_ID_EVENTGRID --extended-location-type CustomLocation --input-schema cloudeventschemav1_0
 EVENT_GRID_TOPIC_ID=$(az eventgrid topic show -g $RESOURCE_GROUP -n $EVENT_GRID_TOPIC_NAME --query id -o tsv)
 
-# This variable should be set by deploy.sh when deploying the funciton app. 
+# This variable should be set by deploy.sh when deploying the function app. 
 # Use the below options to set it for testing the subscription with eventgrid or http triggered endpoints in other locations.
 # EVENTGRID_TRIGGER_URL="https://${FUNCTION_HOST}/runtime/webhooks/eventgrid?functionName=ReviewsValidator"
 # EVENTGRID_TRIGGER_URL="https://${FUNCTION_HOST}/api/ReviewsValidatorHealth"

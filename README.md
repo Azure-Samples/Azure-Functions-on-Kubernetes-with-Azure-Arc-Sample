@@ -6,6 +6,11 @@ The function is triggered by publishing a message containing the rating to an [E
 
 ![Architecture Diagram](./docs/SolutionDiagramFunctionsSample.png)
 
+Background reading:
+
+* [App Service, Functions, and Logic Apps on Azure Arc (Preview)](https://docs.microsoft.com/en-US/Azure/app-service/overview-arc-integration)
+* [Event Grid on Arc-enabled Kubernetes](https://docs.microsoft.com/en-us/azure/event-grid/kubernetes/overview)
+
 ## Getting started
 
 Open the folder you cloned in VS Code. This sample includes a [dev container](https://code.visualstudio.com/docs/remote/create-dev-container) to ease development and deployment. You will need Docker and the [Remote Development extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed. The dev container has all the prerequisite tools and extensions preinstalled. If you can't use the dev container, refer to the docker file in the `.devcontainer` folder to install the neccesary tools.
@@ -82,8 +87,9 @@ Run the default `Test` task in Visual Studio Code, or navigate your terminal to 
 
 ## Resources
 
+* [App Service, Functions, and Logic Apps on Azure Arc (Preview)](https://docs.microsoft.com/en-US/Azure/app-service/overview-arc-integration)
+* [Set up an Azure Arc enabled Kubernetes cluster to run App Service, Functions, and Logic Apps (Preview)](https://docs.microsoft.com/en-us/azure/app-service/manage-create-arc-environment)
 * [Event Grid on Arc-enabled Kubernetes](https://docs.microsoft.com/en-us/azure/event-grid/kubernetes/overview)
-* [App Service on Arc-enabled Kubernetes](https://docs.microsoft.com/en-us/azure/app-service/manage-create-arc-environment)
 * [Event Grid Custom Topics](https://docs.microsoft.com/en-us/azure/event-grid/custom-event-quickstart)
 * [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator?toc=/azure/storage/blobs/toc.json)
 * [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)

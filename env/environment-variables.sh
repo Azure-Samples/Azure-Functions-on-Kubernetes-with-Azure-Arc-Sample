@@ -37,3 +37,4 @@ export EVENT_GRID_TOPIC_NAME="${RESOURCE_GROUP}-eventgrid-topic"
 export EVENT_GRID_SUBSCRIPTION_NAME="${RESOURCE_GROUP}-eventgrid-subscription"
 
 export APPINSIGHTS_NAME="${RESOURCE_GROUP}-appinsights"
+export LA_WORKSPACE_NAME="${RESOURCE_GROUP}-la"

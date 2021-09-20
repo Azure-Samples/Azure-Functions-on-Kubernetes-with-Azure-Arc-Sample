@@ -8,6 +8,9 @@ MICROSOFT_AZURE_WEBSITES_OID=$(az ad sp show --id 'abfa0a7c-a6b6-4736-8310-58555
 CUSTOM_LOCATION_OID=$(az ad sp show --id 'bc313c14-388c-4e7d-a58e-70017303ee3b' --query objectId -o tsv)
 az role assignment create --assignee-object-id $MICROSOFT_AZURE_WEBSITES_OID --role Owner --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}"
 
+LA_CUSTOMER_ID_ENC=$(az monitor log-analytics workspace show --resource-group $RESOURCE_GROUP --workspace-name $LA_WORKSPACE_NAME --query customerId --output tsv | base64 -w0)
+LA_SHARED_KEY_ENC=$(az monitor log-analytics workspace get-shared-keys --resource-group $RESOURCE_GROUP --workspace-name $LA_WORKSPACE_NAME --query primarySharedKey --output tsv | base64 -w0)
+
 #create app service extension
 az k8s-extension create -g $RESOURCE_GROUP --name $EXTENSION_NAME \
     --cluster-type connectedClusters \
@@ -24,7 +27,11 @@ az k8s-extension create -g $RESOURCE_GROUP --name $EXTENSION_NAME \
     --configuration-settings "buildService.storageClassName=default" \
     --configuration-settings "buildService.storageAccessMode=ReadWriteOnce" \
     --configuration-settings "customConfigMap=$CUSTOM_LOCATION_NAMESPACE/kube-environment-config" \
-    --configuration-settings "envoy.annotations.service.beta.kubernetes.io/azure-load-balancer-resource-group=${RESOURCE_GROUP}"
+    --configuration-settings "envoy.annotations.service.beta.kubernetes.io/azure-load-balancer-resource-group=${RESOURCE_GROUP}" \
+    --configuration-settings "logProcessor.appLogs.destination=log-analytics" \
+    --configuration-protected-settings "logProcessor.appLogs.logAnalyticsConfig.customerId=${LA_CUSTOMER_ID_ENC}" \
+    --configuration-protected-settings "logProcessor.appLogs.logAnalyticsConfig.sharedKey=${LA_SHARED_KEY_ENC}"
+
 
 EXTENSION_ID=$(az k8s-extension show --cluster-type connectedClusters -c $CLUSTER_NAME -g $RESOURCE_GROUP --name $EXTENSION_NAME --query id -o tsv)
 az resource wait --ids $EXTENSION_ID --custom "properties.installState=='Installed' || properties.installState=='Failed'"  --api-version "2020-07-01-preview"
@@ -38,6 +45,3 @@ CUSTOM_LOCATION_ID=$(az customlocation show -g $RESOURCE_GROUP -n $CUSTOM_LOCATI
 
 # create app service kube environment
 az appservice kube create -g $RESOURCE_GROUP -n $KUBE_ENVIRONMENT --location $APP_SERVICE_PLAN_LOCATION --custom-location $CUSTOM_LOCATION_ID --static-ip "$AKS_IP_VALUE" 
-
-KUBE_ENV_INSTALL_STATE=$(az appservice kube show -g $RESOURCE_GROUP -n $KUBE_ENVIRONMENT --query provisioningState -o tsv --query provisioningState)
-[[ $KUBE_ENV_INSTALL_STATE != "Succeeded" ]] && echo "kube environment not provisioned, check for errors">&2

@@ -1,27 +1,12 @@
-#-------------------------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
-#-------------------------------------------------------------------------------------------------------------
+# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/dotnet/.devcontainer/base.Dockerfile
 
-FROM node:12
-
-# Avoid warnings by switching to noninteractive
-ENV DEBIAN_FRONTEND=noninteractive
-
-# The node image includes a non-root user with sudo access. Use the "remoteUser"
-# property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
-# will be updated to match your local UID/GID (when using the dockerFile property).
-# See https://aka.ms/vscode-remote/containers/non-root-user for details.
-ARG USERNAME=node
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
+FROM mcr.microsoft.com/vscode/devcontainers/dotnet:3.1
 
 # Configure apt and install packages
 RUN apt-get update \
-    && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
-    #
-    # Verify git and needed tools are installed
-    && apt-get -y install \
+    && apt-get -y install --no-install-recommends \
+        apt-utils \
+        dialog  \
         git \
         iproute2 \
         procps \
@@ -35,12 +20,11 @@ RUN apt-get update \
     #
     # Install Azure Functions, .NET Core, and Azure CLI
     && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" > /etc/apt/sources.list.d/azure-cli.list \
-    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list \
+    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list \
     && curl -sL https://packages.microsoft.com/keys/microsoft.asc | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
     && apt-get update \
-    && apt-get install -y  \
-        dotnet-sdk-3.1 \
-        azure-cli \
+    && apt-get install --no-install-recommends -y  \
+        azure-cli \ 
         azure-functions-core-tools-3 \
     && az aks install-cli \
     && az extension add -n application-insights \
@@ -48,44 +32,26 @@ RUN apt-get update \
     && az extension add --upgrade --yes -n customlocation \
     && az extension add --upgrade --yes -n k8s-extension \
     && az extension add --yes --source "https://aka.ms/appsvc/appservice_kube-latest-py2.py3-none-any.whl" \
-
-# Install docker cli
-    && apt-get update \
-    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
-    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-    && apt-get update \
-    && apt-get -y install docker-ce-cli \
-
-#install helm
+    # install Helm
     && curl https://baltocdn.com/helm/signing.asc | apt-key add \ 
     && echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list \
     && apt-get update \
-    && apt-get install -y helm=3.5.0-1
+    && apt-get install -y helm=3.5.0-1 \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+    # install Azurite
 
-# install Azurite
-    RUN npm install -g azurite
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g azurite
+    # install k9s
+RUN mkdir -p /home/${USERNAME}/.k9s \
+    && K9S_VERSION=$(basename "$(curl -fsSL -o /dev/null -w "%{url_effective}" https://github.com/derailed/k9s/releases/latest)") \
+    && curl -Lo ./k9s.tar.gz https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_x86_64.tar.gz \
+    && mkdir k9s \
+    && tar xvzf k9s.tar.gz -C ./k9s \
+    && chmod 755 ./k9s/k9s \
+    && mv ./k9s/k9s /usr/local/bin/k9s \
+    && rm -rf k9s.tar.gz k9s \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-ENV DOCKER_HOST=tcp://host.docker.internal:2375
-
-# Setup user preferences
-
- RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
-        groupmod --gid $USER_GID $USERNAME \
-        && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
-        && chown -R $USER_UID:$USER_GID /home/$USERNAME; \
-    fi \
-    # [Optional] Add add sudo support for non-root user
-    && apt-get install -y sudo \
-    && echo node ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME \
-    #
-    # Clean up
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-# Switch back to dialog for any ad-hoc use of apt-get
-ENV DEBIAN_FRONTEND=dialog
-
-# Copy our custom bashrc to the devcontainer for git colorization, aliases, etc.
-COPY bashrc /root/.bashrc
+    ENV LANG en_US.UTF-8

@@ -3,6 +3,7 @@ set -ux
 source environment-variables.12.sh
 
 INFRA_RESOURCE_GROUP=$(az aks show -g $RESOURCE_GROUP -n $KUBE_CLUSTER -o tsv --query nodeResourceGroup)
+LA_WORKSPACE_ID=$(az monitor log-analytics workspace show -g $RESOURCE_GROUP -n $LA_WORKSPACE_NAME --query id -o tsv)
 AKS_IP_VALUE=$(az network public-ip show -g $INFRA_RESOURCE_GROUP -n $AKS_IP_NAME -o tsv --query ipAddress)
 CONNECTED_CLUSTER_ID=$(az connectedk8s show -n $CLUSTER_NAME -g $RESOURCE_GROUP --query id -o tsv)
 

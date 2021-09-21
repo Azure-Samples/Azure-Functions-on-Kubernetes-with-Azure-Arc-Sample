@@ -8,7 +8,9 @@ set -ux
 
 #create aks
 az group create -n $RESOURCE_GROUP -l $LOCATION
-az aks create -g $RESOURCE_GROUP -n $KUBE_CLUSTER --enable-aad --generate-ssh-keys
+az monitor log-analytics workspace create -g $RESOURCE_GROUP -n $LA_WORKSPACE_NAME
+LA_WORKSPACE_ID=$(az monitor log-analytics workspace show -g $RESOURCE_GROUP -n $LA_WORKSPACE_NAME --query id -o tsv)
+az aks create -g $RESOURCE_GROUP -n $KUBE_CLUSTER --enable-aad --generate-ssh-keys --enable-addons monitoring --workspace-resource-id $LA_WORKSPACE_ID
 INFRA_RESOURCE_GROUP=$(az aks show -g $RESOURCE_GROUP -n $KUBE_CLUSTER -o tsv --query nodeResourceGroup)
 az network public-ip create -g $INFRA_RESOURCE_GROUP -n $AKS_IP_NAME --sku STANDARD
 AKS_IP_VALUE=$(az network public-ip show -g $INFRA_RESOURCE_GROUP -n $AKS_IP_NAME -o tsv --query ipAddress)

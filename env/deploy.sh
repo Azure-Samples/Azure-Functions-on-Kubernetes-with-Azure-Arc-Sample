@@ -12,7 +12,7 @@ cd ../src/ReviewsValidator
 az storage account create --name $STORAGE_ACCOUNT --resource-group $RESOURCE_GROUP --location $LOCATION --sku Standard_LRS
 STORAGE_CONNECTION_STRING=$(az storage account show-connection-string -n $STORAGE_ACCOUNT -g $RESOURCE_GROUP --query 'connectionString' -o tsv)
 
-az monitor app-insights component create -a $APPINSIGHTS_NAME -l $LOCATION -g $RESOURCE_GROUP
+az monitor app-insights component create -a $APPINSIGHTS_NAME -l $LOCATION -g $RESOURCE_GROUP --workspace $LA_WORKSPACE_NAME
 
 az functionapp create -g $RESOURCE_GROUP -n $APP_NAME --custom-location $CUSTOM_LOCATION_ID -s $STORAGE_ACCOUNT --functions-version 3 --runtime 'dotnet' --app-insights $APPINSIGHTS_NAME
 
